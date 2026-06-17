@@ -520,10 +520,6 @@
           document.getElementById("sTot").textContent   = res.hadir;
           document.getElementById("sAntri").textContent = res.menunggu;
           document.getElementById("sDone").textContent  = res.selesai;
-  
-          // tampilkan nomor terakhir yang statusnya Dipanggil
-          document.getElementById("nomorSekarang").textContent =
-            res.nomor || "-";
         }
       })
       .catch(() => {});
