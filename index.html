@@ -1,0 +1,327 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Operator Antrian</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Inter,sans-serif;
+  background:#eef2fb;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.container{
+  width:100%;
+  max-width:500px;
+  background:#fff;
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.header{
+  text-align:center;
+  margin-bottom:25px;
+}
+
+.header h1{
+  font-size:26px;
+  color:#0d2250;
+  font-weight:800;
+}
+
+.header p{
+  color:#777;
+  margin-top:5px;
+}
+
+.card{
+  text-align:center;
+  border:2px solid #e5e9f5;
+  border-radius:16px;
+  padding:25px;
+}
+
+.label{
+  color:#666;
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:1px;
+}
+
+.nomor{
+  font-size:90px;
+  font-weight:800;
+  color:#c0392b;
+  line-height:1;
+  margin:15px 0;
+}
+
+.nama{
+  font-size:24px;
+  font-weight:700;
+  color:#0d2250;
+}
+
+.status{
+  margin-top:15px;
+  font-size:15px;
+  color:#666;
+}
+
+.btn-group{
+  margin-top:25px;
+  display:flex;
+  gap:10px;
+}
+
+button{
+  flex:1;
+  border:none;
+  border-radius:12px;
+  padding:15px;
+  cursor:pointer;
+  font-size:15px;
+  font-weight:700;
+}
+
+.btn-call{
+  background:#27ae60;
+  color:white;
+}
+
+.btn-finish{
+  background:#0d2250;
+  color:white;
+}
+
+.btn-refresh{
+  margin-top:10px;
+  width:100%;
+  background:#f3f5fb;
+  color:#0d2250;
+}
+
+.footer{
+  margin-top:20px;
+  text-align:center;
+  color:#888;
+  font-size:12px;
+}
+
+.toast{
+  position:fixed;
+  bottom:25px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#0d2250;
+  color:white;
+  padding:12px 20px;
+  border-radius:30px;
+  display:none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="header">
+<h1>Operator Antrian</h1>
+<p>Cek Kesehatan Darah</p>
+</div>
+
+<div class="card">
+
+<div class="label">
+ANTRIAN BERIKUTNYA
+</div>
+
+<div class="nomor" id="nomorAntri">
+-
+</div>
+
+<div class="nama" id="namaPeserta">
+Belum Ada
+</div>
+
+<div class="status" id="statusInfo">
+Menunggu data...
+</div>
+
+</div>
+
+<div class="btn-group">
+
+<button class="btn-call"
+onclick="panggilAntrian()">
+📢 Panggil
+</button>
+
+<button class="btn-finish"
+onclick="selesaiAntrian()">
+✅ Selesai
+</button>
+
+</div>
+
+<button
+class="btn-refresh"
+onclick="loadAntrian()">
+🔄 Refresh
+</button>
+
+<div class="footer">
+GBI Pasarkemis Rayon 3
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+const API =
+"https://script.google.com/macros/s/AKFYxxxxxxxxxxxxxxxx/exec";
+
+let currentRowIndex=null;
+let currentNo=null;
+let currentNama=null;
+
+function loadAntrian(){
+
+fetch(API+"?action=antrian")
+.then(r=>r.json())
+.then(res=>{
+
+if(res.status!=="ok"){
+
+document.getElementById("nomorAntri").innerText="-";
+document.getElementById("namaPeserta").innerText="Tidak ada antrian";
+document.getElementById("statusInfo").innerText="";
+
+return;
+}
+
+currentRowIndex=res.rowIndex;
+currentNo=res.noAntri;
+currentNama=res.nama;
+
+document.getElementById("nomorAntri").innerText=res.noAntri;
+document.getElementById("namaPeserta").innerText=res.nama;
+document.getElementById("statusInfo").innerText="Menunggu dipanggil";
+
+});
+}
+
+function panggilAntrian(){
+
+if(!currentRowIndex){
+showToast("Tidak ada antrian");
+return;
+}
+
+fetch(
+API+
+"?action=panggil"+
+"&rowIndex="+currentRowIndex
+)
+.then(r=>r.json())
+.then(res=>{
+
+if(res.status==="ok"){
+
+speakAntrian(currentNo);
+
+document.getElementById("statusInfo").innerText=
+"Sedang Dipanggil";
+
+showToast("Antrian dipanggil");
+
+}
+
+});
+
+}
+
+function selesaiAntrian(){
+
+if(!currentRowIndex){
+showToast("Tidak ada antrian");
+return;
+}
+
+fetch(
+API+
+"?action=selesai"+
+"&rowIndex="+currentRowIndex
+)
+.then(r=>r.json())
+.then(res=>{
+
+if(res.status==="ok"){
+
+showToast("Antrian selesai");
+
+loadAntrian();
+
+}
+
+});
+
+}
+
+function speakAntrian(no){
+
+const text =
+"Nomor antrian "+
+parseInt(no)+
+", silakan menuju meja pemeriksaan.";
+
+const speech =
+new SpeechSynthesisUtterance(text);
+
+speech.lang="id-ID";
+
+window.speechSynthesis.speak(speech);
+
+}
+
+function showToast(msg){
+
+const t=document.getElementById("toast");
+
+t.innerText=msg;
+t.style.display="block";
+
+setTimeout(()=>{
+t.style.display="none";
+},3000);
+
+}
+
+loadAntrian();
+
+setInterval(loadAntrian,5000);
+
+</script>
+
+</body>
+</html>
+```
