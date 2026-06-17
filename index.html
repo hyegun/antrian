@@ -514,17 +514,20 @@
   function loadSemua() {
     // Statistik
     fetch(API + "?action=statistik")
-    .then(r => r.json())
-    .then(res => {
-      if (res.status === "ok") {
-        document.getElementById("sTot").textContent   = res.hadir;
-        document.getElementById("sAntri").textContent = res.menunggu;  // ← ganti dari res.belum
-        document.getElementById("sDone").textContent  = res.selesai;   // ← ganti dari res.hadir
-      }
-    }).catch(() => {});
-
-    // Daftar antrian — ambil lewat action=antrian (hanya menunggu)
-    // Kita fetch seluruh data mentah dari antrian sheet via dummy trick
+      .then(r => r.json())
+      .then(res => {
+        if (res.status === "ok") {
+          document.getElementById("sTot").textContent   = res.hadir;
+          document.getElementById("sAntri").textContent = res.menunggu;
+          document.getElementById("sDone").textContent  = res.selesai;
+  
+          // tampilkan nomor terakhir yang statusnya Dipanggil
+          document.getElementById("nomorSekarang").textContent =
+            res.nomor || "-";
+        }
+      })
+      .catch(() => {});
+  
     renderDaftarDariStatik();
   }
 
