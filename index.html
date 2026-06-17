@@ -518,14 +518,14 @@
   function loadSemua() {
     // Statistik
     fetch(API + "?action=statistik")
-      .then(r => r.json())
-      .then(res => {
-        if (res.status === "ok") {
-          document.getElementById("sTot").textContent   = res.total;
-          document.getElementById("sAntri").textContent = res.belum;
-          document.getElementById("sDone").textContent  = res.hadir;
-        }
-      }).catch(() => {});
+    .then(r => r.json())
+    .then(res => {
+      if (res.status === "ok") {
+        document.getElementById("sTot").textContent   = res.total;
+        document.getElementById("sAntri").textContent = res.menunggu;  // ← ganti dari res.belum
+        document.getElementById("sDone").textContent  = res.selesai;   // ← ganti dari res.hadir
+      }
+    }).catch(() => {});
 
     // Daftar antrian — ambil lewat action=antrian (hanya menunggu)
     // Kita fetch seluruh data mentah dari antrian sheet via dummy trick
