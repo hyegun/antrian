@@ -173,9 +173,9 @@ onclick="panggilAntrian()">
 📢 Panggil
 </button>
 
-<button class="btn-finish"
-onclick="selesaiAntrian()">
-✅ Selesai
+<button class="btn-call"
+onclick="panggilBerikutnya()">
+📢 PANGGIL BERIKUTNYA
 </button>
 
 </div>
@@ -231,59 +231,70 @@ document.getElementById("statusInfo").innerText="Menunggu dipanggil";
 
 function panggilAntrian(){
 
-if(!currentRowIndex){
-showToast("Tidak ada antrian");
-return;
-}
+  if(!currentRowIndex){
+    showToast("Tidak ada antrian");
+    return;
+  }
 
-fetch(
-API+
-"?action=panggil"+
-"&rowIndex="+currentRowIndex
-)
-.then(r=>r.json())
-.then(res=>{
+  fetch(
+    API +
+    "?action=panggil" +
+    "&rowIndex=" + currentRowIndex
+  )
+  .then(r=>r.json())
+  .then(res=>{
 
-if(res.status==="ok"){
+    if(res.status==="ok"){
 
-speakAntrian(currentNo);
+      speakAntrian(currentNo);
 
-document.getElementById("statusInfo").innerText=
-"Sedang Dipanggil";
+      document.getElementById("statusInfo")
+        .innerText = "Sedang Dipanggil";
 
-showToast("Antrian dipanggil");
+      showToast(
+        "Memanggil nomor " + currentNo
+      );
 
-}
+    }
 
-});
-
-}
-
-function selesaiAntrian(){
-
-if(!currentRowIndex){
-showToast("Tidak ada antrian");
-return;
-}
-
-fetch(
-API+
-"?action=selesai"+
-"&rowIndex="+currentRowIndex
-)
-.then(r=>r.json())
-.then(res=>{
-
-if(res.status==="ok"){
-
-showToast("Antrian selesai");
-
-loadAntrian();
+  });
 
 }
 
-});
+function panggilBerikutnya(){
 
+  fetch(API + "?action=nextAntrian")
+  .then(r=>r.json())
+  .then(res=>{
+
+    if(res.status === "selesai"){
+
+      showToast("Semua antrian selesai");
+
+      document.getElementById("nomorAntri").innerText = "-";
+      document.getElementById("namaPeserta").innerText = "Tidak ada antrian";
+
+      return;
+    }
+
+    if(res.status === "ok"){
+
+      currentRowIndex = res.rowIndex;
+
+      document.getElementById("nomorAntri").innerText =
+        res.noAntri;
+
+      document.getElementById("namaPeserta").innerText =
+        res.nama;
+
+      speakAntrian(res.noAntri);
+
+      showToast(
+        "Memanggil No. " + res.noAntri
+      );
+    }
+
+  });
 }
 
 function speakAntrian(no){
